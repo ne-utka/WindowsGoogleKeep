@@ -1,5 +1,6 @@
 # WindowsGoogleKeep
-<img width="1168" height="681" alt="image" src="https://github.com/user-attachments/assets/afae1595-fce8-4917-9b50-fa0436eb36df" />
+<img width="1121" height="641" alt="image" src="https://github.com/user-attachments/assets/2f2d0040-5e1d-43f3-8038-051f1da1a0da" />
+
 Скачать | Download
 
 `https://github.com/ne-utka/WindowsGoogleKeep/releases/download/v1.0.0/WindowsGoogleKeep.1.0.0.exe`
