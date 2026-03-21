@@ -1,6 +1,7 @@
 # WindowsGoogleKeep
 <img width="1168" height="681" alt="image" src="https://github.com/user-attachments/assets/afae1595-fce8-4917-9b50-fa0436eb36df" />
 Скачать | Download
+
 `https://github.com/ne-utka/WindowsGoogleKeep/releases/download/v1.0.0/WindowsGoogleKeep.1.0.0.exe`
 
 Desktop-приложение для Google Keep на Electron с сохранением сессии и отдельной верхней панелью управления окном.
