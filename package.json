@@ -5,6 +5,7 @@
   "main": "electron/main.cjs",
   "scripts": {
     "start": "electron .",
+    "test": "node --check electron/main.cjs && node --check electron/shell-preload.cjs && node --check electron/settings-preload.cjs",
     "build:win": "electron-builder --win portable"
   },
   "dependencies": {
