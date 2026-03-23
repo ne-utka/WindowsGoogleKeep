@@ -1,4 +1,4 @@
-﻿const { app, BrowserWindow, BrowserView, shell, Menu, Tray, globalShortcut, ipcMain, session } = require('electron');
+﻿const { app, BrowserWindow, BrowserView, shell, Menu, Tray, globalShortcut, ipcMain } = require('electron');
 const path = require('path');
 const Store = require('electron-store');
 
@@ -22,15 +22,6 @@ let keepView;
 let settingsWindow;
 let tray;
 let isQuitting = false;
-
-function getGoogleCompatibleUserAgent() {
-    const baseUa = session.fromPartition(KEEP_PARTITION).getUserAgent();
-    return baseUa
-        .replace(/\sElectron\/\S+/g, '')
-        .replace(/\sgoogle-keep-webview\/\S+/gi, '')
-        .replace(/\sWindowsGoogleKeep\/\S+/gi, '')
-        .trim();
-}
 
 function getAppSettings() {
     return {
@@ -430,7 +421,6 @@ function createMainWindow() {
             partition: KEEP_PARTITION,
         },
     });
-    keepView.webContents.setUserAgent(getGoogleCompatibleUserAgent());
     mainWindow.setBrowserView(keepView);
     updateViewBounds();
 
@@ -715,6 +705,7 @@ app.on('will-quit', () => {
     globalShortcut.unregisterAll();
     destroyTray();
 });
+
 
 
 
