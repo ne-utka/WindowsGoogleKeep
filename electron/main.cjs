@@ -5,11 +5,13 @@ const Store = require('electron-store');
 const KEEP_URL = 'https://keep.google.com';
 const GOOGLE_KEEP_HOST = 'keep.google.com';
 const GOOGLE_ACCOUNTS_HOST = 'accounts.google.com';
+const GOOGLE_DRIVE_HOST = 'drive.google.com';
 const KEEP_PARTITION = 'persist:keep';
 const APP_ICON_PATH = path.join(__dirname, '..', 'assets', 'app-icon-converted.ico');
 const SHELL_PRELOAD_PATH = path.join(__dirname, 'shell-preload.cjs');
 const SETTINGS_PRELOAD_PATH = path.join(__dirname, 'settings-preload.cjs');
 const TOP_BAR_HEIGHT = 36;
+const CHROME_LIKE_USER_AGENT = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${process.versions.chrome} Safari/537.36`;
 const SETTINGS_KEY = 'appSettings';
 const DEFAULT_SETTINGS = {
     autoLaunch: false,
@@ -22,6 +24,8 @@ let keepView;
 let settingsWindow;
 let tray;
 let isQuitting = false;
+
+app.userAgentFallback = CHROME_LIKE_USER_AGENT;
 
 function getAppSettings() {
     return {
@@ -62,6 +66,16 @@ function isGoogleHost(hostname) {
     return hostname === 'google.com' || hostname.endsWith('.google.com');
 }
 
+function isGoogleAuthHost(hostname) {
+    return (
+        isGoogleHost(hostname)
+        || hostname === 'gstatic.com'
+        || hostname.endsWith('.gstatic.com')
+        || hostname === 'googleusercontent.com'
+        || hostname.endsWith('.googleusercontent.com')
+    );
+}
+
 function parseUrl(rawUrl) {
     try {
         return new URL(rawUrl);
@@ -72,17 +86,19 @@ function parseUrl(rawUrl) {
 
 function handleUrlByPolicy(rawUrl, event) {
     const parsed = parseUrl(rawUrl);
-    if (!parsed || parsed.protocol !== 'https:' || !isAllowedHost(parsed.hostname)) {
+    if (!parsed || parsed.protocol !== 'https:') {
+        if (event) {
+            event.preventDefault();
+        }
+        return false;
+    }
+
+    if (!isAllowedHost(parsed.hostname) && !isGoogleAuthHost(parsed.hostname)) {
         if (event) {
             event.preventDefault();
         }
 
         if (parsed && (parsed.protocol === 'http:' || parsed.protocol === 'https:')) {
-            // Google services may trigger background warm-up redirects (for example SetOSID).
-            // Keep these blocked in-app instead of launching external browser windows.
-            if (isGoogleHost(parsed.hostname)) {
-                return false;
-            }
             shell.openExternal(parsed.toString());
         }
         return false;
@@ -130,6 +146,12 @@ function applyStartupRouting() {
     const onUrlChange = (url) => {
         const parsed = parseUrl(url);
         if (!parsed) {
+            return;
+        }
+
+        // Drive SetOSID is a warm-up hop, keep should be the final destination.
+        if (parsed.hostname === GOOGLE_DRIVE_HOST && parsed.pathname === '/accounts/SetOSID') {
+            keepView.webContents.loadURL(KEEP_URL);
             return;
         }
 
@@ -421,6 +443,7 @@ function createMainWindow() {
             partition: KEEP_PARTITION,
         },
     });
+    keepView.webContents.setUserAgent(CHROME_LIKE_USER_AGENT);
     mainWindow.setBrowserView(keepView);
     updateViewBounds();
 
